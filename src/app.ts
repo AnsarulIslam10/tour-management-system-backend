@@ -1,5 +1,8 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import cors from 'cors';
 import express, { Request, Response } from 'express';
+import { globalErrorHandler } from './app/middlewares/golbalErrorHandler';
 import { router } from './app/routes';
 const app = express()
 app.use(express.json())
@@ -11,5 +14,7 @@ app.get('/', (req: Request, res: Response) => {
         message: "Welcome to tour management backend"
     })
 })
+
+app.use(globalErrorHandler)
 
 export default app;
