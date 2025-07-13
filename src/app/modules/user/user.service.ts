@@ -8,8 +8,8 @@ import bcriptjs from 'bcryptjs'
 const createUser = async (payload: Partial<IUser>) => {
     const { email, password, ...rest } = payload;
 
-    const IsUserExist = await User.findOne({email})
-    if (IsUserExist) {
+    const isUserExist = await User.findOne({email})
+    if (isUserExist) {
         throw new AppError(httpStatus.BAD_REQUEST, "User Already Exist")
     }
 
