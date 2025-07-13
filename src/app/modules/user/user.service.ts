@@ -1,11 +1,24 @@
-import { IUser } from "./user.interface";
+/* eslint-disable @typescript-eslint/no-non-null-assertion */
+import httpStatus from 'http-status-codes';
+import AppError from "../../errorHelpers/AppError";
+import { IAuthProvider, IUser } from "./user.interface";
 import { User } from "./user.model";
 
 const createUser = async (payload: Partial<IUser>) => {
-    const { name, email } = payload;
+    const { email, ...rest } = payload;
+
+    const IsUserExist = await User.findOne({email})
+    if (IsUserExist) {
+        throw new AppError(httpStatus.BAD_REQUEST, "User Already Exist")
+    }
+
+    const authProvider: IAuthProvider = {provider: "credentials", providerId: email as string}
+
+
     const user = await User.create({
-        name,
-        email
+        email,
+        auths: [authProvider],
+        ...rest
     })
     return user
 }
