@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import bcryptjs from "bcryptjs";
 import httpStatus from 'http-status-codes';
 import AppError from "../../errorHelpers/AppError";
@@ -23,13 +24,17 @@ const credentialsLogin = async (payload: Partial<IUser>) => {
         email: isUserExist.email,
         role: isUserExist.role
     }
-    // const accessToken = jwt.sign(jwtPayload, "secret", {
-    //     expiresIn: "1d"
-    // })
-    const accessToken = generateToken(jwtPayload, envVars.JWT_ACCESS_SECRET, envVars.JWT_ACCESS_EXPIRE)
+    const accessToken = generateToken(jwtPayload, envVars.JWT_ACCESS_SECRET, envVars.JWT_ACCESS_EXPIRES)
+
+    const refreshToken = generateToken(jwtPayload, envVars.JWT_REFRESH_SECRET, envVars.JWT_REFRESH_EXPIRES)
+
+    // delete isUserExist.password;
+    const {password: pass, ...rest} = isUserExist
 
     return {
-        accessToken
+        accessToken,
+        refreshToken,
+        user: rest
     }
 }
 
