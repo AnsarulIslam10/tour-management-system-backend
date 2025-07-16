@@ -15,7 +15,7 @@ const createUser = async (payload: Partial<IUser>) => {
         throw new AppError(httpStatus.BAD_REQUEST, "User Already Exist")
     }
 
-    const hashedPassword = await bcriptjs.hash(password as string, Number(envVars.DCRYPT_SALT_ROUND))
+    const hashedPassword = await bcriptjs.hash(password as string, Number(envVars.BCRYPT_SALT_ROUND))
 
 
     const authProvider: IAuthProvider = { provider: "credentials", providerId: email as string }
@@ -54,7 +54,7 @@ const updateUser = async (userId: string, payload: Partial<IUser>, decodedToken:
         }
     }
     if (payload.password) {
-        payload.password = await bcriptjs.hash(payload.password, Number(envVars.DCRYPT_SALT_ROUND))
+        payload.password = await bcriptjs.hash(payload.password, Number(envVars.BCRYPT_SALT_ROUND))
     }
     const newUpdatedUser = await User.findByIdAndUpdate(userId, payload, {new: true, runValidators: true })
 

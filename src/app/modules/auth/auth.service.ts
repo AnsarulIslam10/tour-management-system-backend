@@ -1,9 +1,12 @@
+/* eslint-disable @typescript-eslint/no-non-null-assertion */
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import bcryptjs from "bcryptjs";
 import httpStatus from 'http-status-codes';
 import AppError from "../../errorHelpers/AppError";
+import { createNewAccessTokenWithRefreshToken, createUserTokens } from "../../utils/userTokens";
 import { IUser } from "../user/user.interface";
 import { User } from '../user/user.model';
-import { generateToken } from "../../utils/jwt";
+import { JwtPayload } from "jsonwebtoken";
 import { envVars } from "../../config/env";
 const credentialsLogin = async (payload: Partial<IUser>) => {
     const { email, password } = payload;
@@ -18,21 +21,42 @@ const credentialsLogin = async (payload: Partial<IUser>) => {
         throw new AppError(httpStatus.BAD_REQUEST, "Incorrect Password")
     }
 
-    const jwtPayload = {
-        userId: isUserExist._id,
-        email: isUserExist.email,
-        role: isUserExist.role
-    }
-    // const accessToken = jwt.sign(jwtPayload, "secret", {
-    //     expiresIn: "1d"
-    // })
-    const accessToken = generateToken(jwtPayload, envVars.JWT_ACCESS_SECRET, envVars.JWT_ACCESS_EXPIRE)
+    const userTokens = createUserTokens(isUserExist)
+
+    // delete isUserExist.password;
+    const { password: pass, ...rest } = isUserExist.toObject()
 
     return {
-        accessToken
+        accessToken: userTokens.accessToken,
+        refreshToken: userTokens.refreshToken,
+        user: rest
+    }
+}
+const getNewAccessToken = async (refreshToken: string) => {
+    const newAccessToken = await createNewAccessTokenWithRefreshToken(refreshToken)
+
+    return {
+        accessToken: newAccessToken
     }
 }
 
+const resetPassword = async (oldPassword: string, newPassword: string, decodedToken: JwtPayload) => {
+
+    const user = await User.findById(decodedToken.userId)
+
+    const isOldPasswordMatch = await bcryptjs.compare(oldPassword, user!.password as string)
+    if (!isOldPasswordMatch) {
+        throw new AppError(httpStatus.UNAUTHORIZED, "Old Password does not match");
+    }
+
+    user!.password = await bcryptjs.hash(newPassword, Number(envVars.BCRYPT_SALT_ROUND))
+
+    user!.save();
+
+}
+
 export const AuthServices = {
-    credentialsLogin
+    credentialsLogin,
+    getNewAccessToken,
+    resetPassword
 }
