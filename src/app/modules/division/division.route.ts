@@ -6,7 +6,6 @@ import { createDivisionSchema, updateDivisionSchema } from "./division.validatio
 import { DivisionController } from "./division.controller";
 
 
-
 const router = Router()
 
 router.post(
