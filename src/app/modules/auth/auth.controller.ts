@@ -18,8 +18,9 @@ const credentialsLogin = catchAsync(async (req: Request, res: Response, next: Ne
     passport.authenticate("local", async (err: any, user: any, info: any) => {
 
         if (err) {
-            return next(new AppError(401, err))
+            return next(new AppError(err.statusCode, err.message))
         }
+
         if (!user) {
             return next(new AppError(401, info.message))
         }
@@ -104,16 +105,15 @@ const changePassword = catchAsync(async (req: Request, res: Response, next: Next
 
 const resetPassword = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
 
-    const newPassword = req.body.newPassword;
-    const oldPassword = req.body.oldPassword;
     const decodedToken = req.user
-    await AuthServices.resetPassword(oldPassword, newPassword, decodedToken as JwtPayload)
+
+    await AuthServices.resetPassword(req.body, decodedToken as JwtPayload);
 
     sendResponse(res, {
         success: true,
         statusCode: httpStatus.OK,
         message: "Password Changed Successfully",
-        data: null
+        data: null,
     })
 })
 
@@ -129,6 +129,21 @@ const setPassword = catchAsync(async (req: Request, res: Response, next: NextFun
         success: true,
         statusCode: httpStatus.OK,
         message: "Password Changed Successfully",
+        data: null,
+    })
+})
+
+const forgotPassword = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
+
+
+    const { email } = req.body;
+
+    await AuthServices.forgotPassword(email);
+
+    sendResponse(res, {
+        success: true,
+        statusCode: httpStatus.OK,
+        message: "Email Sent Successfully",
         data: null,
     })
 })
@@ -152,13 +167,6 @@ const googleCallbackController = catchAsync(async (req: Request, res: Response, 
 
     setAuthCookie(res, tokenInfo)
 
-    // sendResponse(res, {
-    //     success: true,
-    //     statusCode: httpStatus.OK,
-    //     message: "Password Changed Successfully",
-    //     data: null
-    // })
-
     res.redirect(`${envVars.FRONTEND_URL}/${redirectTo}`)
 })
 
@@ -170,5 +178,6 @@ export const AuthControllers = {
     resetPassword,
     changePassword,
     setPassword,
+    forgotPassword,
     googleCallbackController
 }

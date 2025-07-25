@@ -6,14 +6,16 @@ import { envVars } from '../../config/env';
 import AppError from "../../errorHelpers/AppError";
 import { IAuthProvider, IUser, Role } from "./user.interface";
 import { User } from "./user.model";
+import { userSearchableFields } from './user.constant';
+import { QueryBuilder } from '../../utils/QueryBuilder';
 
 const createUser = async (payload: Partial<IUser>) => {
     const { email, password, ...rest } = payload;
 
     const isUserExist = await User.findOne({ email })
-    // if (isUserExist) {
-    //     throw new AppError(httpStatus.BAD_REQUEST, "User Already Exist")
-    // }
+    if (isUserExist) {
+        throw new AppError(httpStatus.BAD_REQUEST, "User Already Exist")
+    }
 
     const hashedPassword = await bcriptjs.hash(password as string, Number(envVars.BCRYPT_SALT_ROUND))
 
@@ -62,19 +64,45 @@ const updateUser = async (userId: string, payload: Partial<IUser>, decodedToken:
 }
 
 
-const getAllUsers = async () => {
-    const users = await User.find({})
-    const totalUsers = await User.countDocuments()
+const getAllUsers = async (query: Record<string, string>) => {
+
+    const queryBuilder = new QueryBuilder(User.find(), query)
+    const usersData = queryBuilder
+        .filter()
+        .search(userSearchableFields)
+        .sort()
+        .fields()
+        .paginate();
+
+    const [data, meta] = await Promise.all([
+        usersData.build(),
+        queryBuilder.getMeta()
+    ])
+
     return {
-        data: users,
-        meta: {
-            total: totalUsers
-        }
-    };
-}
+        data,
+        meta
+    }
+};
+
+const getSingleUser = async (id: string) => {
+    const user = await User.findById(id).select("-password");
+    return {
+        data: user
+    }
+};
+
+const getMe = async (userId: string) => {
+    const user = await User.findById(userId).select("-password");
+    return {
+        data: user
+    }
+};
 
 export const UserServices = {
     createUser,
     getAllUsers,
-    updateUser
+    updateUser,
+    getSingleUser,
+    getMe
 }
