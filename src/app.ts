@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import cors from 'cors';
-import express, { Request, Response } from 'express';
+import express, { Request, Response, urlencoded } from 'express';
 import { globalErrorHandler } from './app/middlewares/golbalErrorHandler';
 import notFound from './app/middlewares/notFound';
 import { router } from './app/routes';
@@ -23,6 +23,7 @@ app.use(passport.session())
 
 app.use(cookieParser())
 app.use(express.json())
+app.use(express.urlencoded({extended: true}))
 app.use(cors())
 
 app.use("/api/v1", router)
