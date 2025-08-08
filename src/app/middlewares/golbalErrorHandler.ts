@@ -8,7 +8,7 @@ import { handlerValidationError } from "../helpers/handlerValidationError"
 import { handlerZodError } from "../helpers/handlerZodError"
 import { handlerDuplicateError } from "../helpers/handleDuplicateError"
 import { handleCastError } from "../helpers/handleCastError"
-import { deleteImageFromCloudinary } from "../config/cloudinary.config"
+import { deleteImageFromCLoudinary } from "../config/cloudinary.config"
 
 
 export const globalErrorHandler = async (err: any, req: Request, res: Response, next: NextFunction) => {
@@ -17,12 +17,12 @@ export const globalErrorHandler = async (err: any, req: Request, res: Response, 
     }
 
     if (req.file) {
-        await deleteImageFromCloudinary(req.file.path)
+        await deleteImageFromCLoudinary(req.file.path)
     }
     if (req.files && Array.isArray(req.files) && req.files.length) {
         const imageUrls = (req.files as Express.Multer.File[]).map(file => file.path)
 
-        await Promise.all(imageUrls.map(url => deleteImageFromCloudinary(url)))
+        await Promise.all(imageUrls.map(url => deleteImageFromCLoudinary(url)))
     }
 
     let errorSources: TErrorSources[] = []
@@ -61,10 +61,11 @@ export const globalErrorHandler = async (err: any, req: Request, res: Response, 
         statusCode = 500;
         message = err.message
     }
-    res.status(statusCode).json({
+    res.status(typeof statusCode === "number" ? statusCode : 500).json({
         success: false,
         message,
         err: envVars.NODE_ENV === "development" ? err : null,
-        stack: envVars.NODE_ENV === "development" ? err.stack : null
-    })
+        stack: envVars.NODE_ENV === "development" ? err.stack : null,
+    });
+
 }
