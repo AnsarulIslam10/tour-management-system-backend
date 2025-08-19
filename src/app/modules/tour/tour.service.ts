@@ -1,4 +1,4 @@
-import { deleteImageFromCloudinary } from "../../config/cloudinary.config";
+import { deleteImageFromCLoudinary } from "../../config/cloudinary.config";
 import { QueryBuilder } from "../../utils/QueryBuilder";
 import { tourSearchableFields } from "./tour.constant";
 import { ITour, ITourType } from "./tour.interface";
@@ -67,7 +67,7 @@ const updateTour = async (id: string, payload: Partial<ITour>) => {
     const updatedTour = await Tour.findByIdAndUpdate(id, payload, { new: true });
 
     if (payload.deleteImages && payload.deleteImages.length > 0 && existingTour.images && existingTour.images.length > 0) {
-        await Promise.all(payload.deleteImages.map(url => deleteImageFromCloudinary(url)))
+        await Promise.all(payload.deleteImages.map(url => deleteImageFromCLoudinary(url)))
     }
 
     return updatedTour;
@@ -78,13 +78,13 @@ const deleteTour = async (id: string) => {
 };
 
 const createTourType = async (payload: ITourType) => {
-    const existingTourType = await TourType.findOne({ name: payload.name });
+    const existingTourType = await TourType.findOne({ name: payload });
 
     if (existingTourType) {
         throw new Error("Tour type already exists.");
     }
 
-    return await TourType.create({ name });
+    return await TourType.create({ name: payload });
 };
 const getAllTourTypes = async () => {
     return await TourType.find();
