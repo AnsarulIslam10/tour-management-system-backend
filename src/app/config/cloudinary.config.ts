@@ -45,12 +45,11 @@ export const uploadBufferToCloudinary = async (buffer: Buffer, fileName: string)
         })
 
     } catch (error: any) {
-        console.log(error);
         throw new AppError(401, `Error uploading file ${error.message}`)
     }
 }
 
-export const deleteImageFromCLoudinary = async (url: string) => {
+export const deleteImageFromCloudinary = async (url: string) => {
     try {
         //https://res.cloudinary.com/djzppynpk/image/upload/v1753126572/ay9roxiv8ue-1753126570086-download-2-jpg.jpg.jpg
 
@@ -58,12 +57,9 @@ export const deleteImageFromCLoudinary = async (url: string) => {
 
         const match = url.match(regex);
 
-        console.log({ match });
-
         if (match && match[1]) {
             const public_id = match[1];
             await cloudinary.uploader.destroy(public_id)
-            console.log(`File ${public_id} is deleted from cloudinary`);
 
         }
     } catch (error: any) {
@@ -72,12 +68,3 @@ export const deleteImageFromCLoudinary = async (url: string) => {
 }
 
 export const cloudinaryUpload = cloudinary
-
-
-
-// const uploadToCloudinary = cloudinary.uploader.upload()
-
-//
-
-//Multer storage cloudinary
-//Amader folder -> image -> form data -> File -> Multer -> storage in cloudinary -> url ->  req.file  -> url  -> mongoose -> mongodb
